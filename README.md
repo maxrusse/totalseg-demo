@@ -1,62 +1,107 @@
-# Codex Windows Demo
+# TotalSegmentator Local Tool
+
+Lokales Windows-Webfrontend fuer TotalSegmentator.
 
 GitHub: https://github.com/maxrusse/totalseg-demo
 
-This is a self-contained Windows web app that runs locally on Windows.
+Das Projekt laeuft lokal unter Windows und braucht fuer den normalen Ablauf nur zwei Schritte:
 
-It generates a synthetic 3D demo scene locally, so there is:
+1. `install.ps1`
+2. `start.ps1`
 
-- no DICOM input
-- no model weights
-- no external segmentation runtime
+Optional kann man vorab die Modellgewichte laden, damit der erste Lauf nicht warten muss:
 
-The app uses FastAPI + a small browser UI and writes demo jobs into `data\jobs`.
+3. `install.ps1 -DownloadWeights`
 
-## Prompt History
+oder
 
-### TotalSeg build prompt
+3. `download_weights.ps1`
 
-> Build a local Windows web frontend for TotalSegmentator with install/start/stop scripts, a browser UI, job tracking, a viewer, and volume export. Keep it fully local and self-contained.
+## Installation
 
-### GitHub upload prompt
-
-> Upload that as a full working example without DICOM or weights to GitHub as a public example for a Codex one-shot Windows application. Add small info on how to run it in the README with manual PowerShell one-liners, and ignore the backup.
-
-## Run manually
+PowerShell als normaler Benutzer oeffnen:
 
 ```powershell
 cd C:\Users\Max\code\work\Totalseg
 powershell -ExecutionPolicy Bypass -File .\install.ps1
+```
+
+Das Skript nutzt die vorhandene Miniconda-Installation unter `C:\Users\Max\miniconda3`, legt eine Python-3.11-Umgebung unter `runtime\conda-env` an und installiert:
+
+- PyTorch CPU oder CUDA (`auto` nutzt bei NVIDIA-GPU den CUDA-12.8-Wheel)
+- TotalSegmentator
+- FastAPI/Uvicorn
+- SimpleITK, pydicom, nibabel, numpy, Pillow
+
+CPU-only Installation erzwingen:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\install.ps1 -TorchBuild cpu
+```
+
+Optional koennen die Modellgewichte vorab geladen werden:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\install.ps1 -DownloadWeights -WeightsTask lung_nodules
+```
+
+Das gleiche laesst sich auch mit `download_weights.ps1` machen. TotalSegmentator speichert die Gewichte lokal unter `runtime\totalsegmentator_home`.
+
+## Start
+
+```powershell
+cd C:\Users\Max\code\work\Totalseg
 powershell -ExecutionPolicy Bypass -File .\start.ps1
 ```
 
-One-liner:
-
-```powershell
-powershell -ExecutionPolicy Bypass -Command "Set-Location C:\Users\Max\code\work\Totalseg; .\install.ps1; .\start.ps1"
-```
-
-The app opens at:
+Die App startet auf:
 
 `http://127.0.0.1:7865`
 
-## Stop
+Server stoppen:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\stop.ps1
 ```
 
-## Smoke test
+## Testdaten
+
+Die App ist auf die vorhandenen LIDC-IDRI-Daten voreingestellt:
+
+`C:\Users\Max\code\work\TCIA_LIDC-IDRI\lidc_idri`
+
+Im Browser:
+
+1. Patient- oder Serienordner auswaehlen.
+2. `Scannen` klicken.
+3. Eine CT-Serie mit `Use` auswaehlen.
+4. Task waehlen, z.B. `lung_nodules` oder `total`.
+5. `Start` klicken.
+
+CPU-Laeufe koennen lange dauern. `Fast` ist standardmaessig aktiv.
+
+## Smoke-Test ohne Segmentierung
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\smoke_test.ps1
 ```
 
-## What you get
+Der Test sucht die erste CT-Serie in LIDC-IDRI und prueft die DICOM-zu-NIfTI-Vorverarbeitung.
 
-- a generated demo volume
-- a few local masks
-- slice and mask viewers
-- job history and volume reports
+## Ergebnisse
 
-The public example is intentionally small and reproducible so it is easy to hand to a teammate.
+Jeder Lauf bekommt einen Ordner unter `data\jobs\<job-id>`:
+
+- `input.nii.gz`: vorverarbeitetes CT
+- `segmentations\`: TotalSegmentator-Masken
+- `volumes.json`: berechnete Volumina
+- `volumes.txt`: Text-Export
+- `log.txt`: Laufprotokoll
+
+Der Viewer zeigt links CT-Slices und rechts die ausgewaehlte Maske. Volumina lassen sich ueber `Volumina` als Textdatei exportieren.
+
+## Hinweise
+
+TotalSegmentator ist kein Medizinprodukt fuer klinische Nutzung. Die App ist ein lokales Forschungs-/Testwerkzeug.
+
+Offizielle TotalSegmentator-Dokumentation: https://github.com/wasserth/TotalSegmentator

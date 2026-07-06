@@ -1,60 +1,92 @@
 <!doctype html>
-<html lang="en">
+<html lang="de">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Codex Windows Demo</title>
+    <title>TotalSegmentator Local</title>
     <link rel="stylesheet" href="/static/styles.css" />
   </head>
   <body>
     <header class="topbar">
       <div>
-        <h1>Codex Windows Demo</h1>
-        <p id="runtimeLine">Runtime is being checked...</p>
+        <h1>TotalSegmentator Local</h1>
+        <p id="runtimeLine">Runtime wird geprueft...</p>
       </div>
       <div class="top-actions">
-        <button id="refreshJobsBtn" class="icon-button" title="Refresh jobs">↻</button>
+        <button id="refreshJobsBtn" class="icon-button" title="Jobs aktualisieren">↻</button>
       </div>
     </header>
 
     <main class="workspace">
-      <section class="panel scene-panel">
+      <section class="panel dicom-panel">
         <div class="panel-title">
-          <h2>Scene</h2>
-          <button id="reloadScenesBtn" class="ghost" title="Reload scenes">Reload</button>
+          <h2>DICOM</h2>
+          <button id="scanBtn">Scannen</button>
         </div>
-        <label for="sceneSelect">Demo scene</label>
-        <select id="sceneSelect"></select>
-        <div class="selected-path">
-          <span>Description</span>
-          <strong id="sceneDescription">Select a demo scene.</strong>
+        <label class="path-label" for="pathInput">Ordner</label>
+        <div class="path-row">
+          <input id="pathInput" type="text" spellcheck="false" />
+          <button id="openPathBtn">Oeffnen</button>
         </div>
-        <div class="selected-path">
-          <span>About</span>
-          <strong>No DICOM or model weights are required. Everything is generated locally.</strong>
+        <div class="browser-row">
+          <button id="upBtn" class="ghost">↑</button>
+          <span id="browserPath"></span>
+        </div>
+        <div id="dirList" class="dir-list"></div>
+      </section>
+
+      <section class="panel series-panel">
+        <div class="panel-title">
+          <h2>Serien</h2>
+          <span id="seriesCount" class="muted">0</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Patient</th>
+                <th>Mod.</th>
+                <th>Serie</th>
+                <th>Slices</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="seriesBody"></tbody>
+          </table>
         </div>
       </section>
 
       <section class="panel run-panel">
         <div class="panel-title">
-          <h2>Run</h2>
-          <button id="runBtn">Start demo</button>
+          <h2>Auftrag</h2>
+          <button id="runBtn">Start</button>
         </div>
+        <label for="taskSelect">Task</label>
+        <select id="taskSelect"></select>
         <div class="run-grid">
+          <label>
+            Geraet
+            <select id="deviceSelect">
+              <option value="cpu">CPU</option>
+              <option value="gpu">GPU</option>
+            </select>
+          </label>
           <label class="check-row">
             <input id="fastCheck" type="checkbox" checked />
             <span>Fast</span>
           </label>
         </div>
+        <label for="roiInput">ROI subset</label>
+        <input id="roiInput" type="text" placeholder="optional, z.B. lung spleen" />
         <div class="selected-path">
-          <span>Selected scene</span>
-          <strong id="selectedScene">none</strong>
+          <span>Gewaehlte Serie</span>
+          <strong id="selectedSeries">keine</strong>
         </div>
         <div class="progress-shell">
           <div id="progressBar"></div>
         </div>
         <div class="job-state">
-          <span id="jobState">Ready</span>
+          <span id="jobState">Bereit</span>
           <span id="jobProgress">0%</span>
         </div>
         <pre id="logBox"></pre>
@@ -71,31 +103,31 @@
         <div class="viewer-toolbar">
           <div>
             <h2>Viewer</h2>
-            <span id="viewerInfo" class="muted">No result loaded</span>
+            <span id="viewerInfo" class="muted">Kein Ergebnis geladen</span>
           </div>
           <div class="viewer-controls">
-            <label>Mask <select id="maskSelect"></select></label>
+            <label>Maske <select id="maskSelect"></select></label>
             <label>Slice <input id="sliceRange" type="range" min="0" max="0" value="0" /></label>
             <label>Level <input id="levelInput" type="number" value="-600" /></label>
             <label>Width <input id="widthInput" type="number" value="1500" /></label>
-            <a id="exportLink" class="button-link" href="#" download>Volumes</a>
+            <a id="exportLink" class="button-link" href="#" download>Volumina</a>
           </div>
         </div>
         <div class="viewer-grid">
           <figure>
-            <figcaption>Volume</figcaption>
-            <img id="ctImage" alt="Demo volume slice" />
+            <figcaption>CT</figcaption>
+            <img id="ctImage" alt="CT slice" />
           </figure>
           <figure>
-            <figcaption>Mask</figcaption>
-            <img id="maskImage" alt="Demo mask slice" />
+            <figcaption>Maske</figcaption>
+            <img id="maskImage" alt="Mask slice" />
           </figure>
         </div>
         <div class="volumes-wrap">
           <table>
             <thead>
               <tr>
-                <th>Mask</th>
+                <th>Maske</th>
                 <th>Voxels</th>
                 <th>ml</th>
               </tr>

@@ -1,1 +1,1 @@
-"""Local Codex Windows demo."""
+"""Local TotalSegmentator browser tool."""

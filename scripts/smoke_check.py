@@ -8,27 +8,28 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from app.jobs import create_job, load_job  # noqa: E402
-from app.segmentation import run_segmentation_job  # noqa: E402
+from app.config import SMOKE_DIR, ensure_runtime_dirs  # noqa: E402
+from app.dicom_io import first_ct_series, preprocess_dicom_to_nifti  # noqa: E402
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.parse_args()
+    parser.add_argument("--dicom-root", required=True)
+    args = parser.parse_args()
 
-    job = create_job({"scene_id": "synthetic_torso", "fast": True})
-    run_segmentation_job(job["id"])
-    result = load_job(job["id"])
-    if result.get("state") != "completed":
-        raise SystemExit(f"Smoke test failed: {result.get('state')}")
-    volumes = result.get("outputs", {}).get("volumes", [])
-    if not volumes:
-        raise SystemExit("Smoke test failed: no volumes were produced")
+    ensure_runtime_dirs()
+    series = first_ct_series(args.dicom_root)
+    out = SMOKE_DIR / "smoke_input.nii.gz"
+    meta = preprocess_dicom_to_nifti(series["path"], out)
 
-    print("Synthetic demo smoke test passed.")
-    print(f"  job: {job['id']}")
-    print(f"  volumes: {len(volumes)}")
-    print(f"  report: {result.get('outputs', {}).get('volumes_txt', '')}")
+    print("Selected CT series:")
+    print(f"  patient: {series.get('patient_id')}")
+    print(f"  path:    {series.get('path')}")
+    print(f"  slices:  {series.get('file_count')}")
+    print("Preprocessed NIfTI:")
+    print(f"  output:  {meta['nifti_path']}")
+    print(f"  size:    {meta['size_xyz']}")
+    print(f"  spacing: {meta['spacing_xyz_mm']}")
     return 0
 
 

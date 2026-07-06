@@ -1,30 +1,76 @@
 from __future__ import annotations
 
 import json
-import time
+import subprocess
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 
-from .demo_scene import save_scene
+from .config import local_totalsegmentator, runtime_env
+from .dicom_io import preprocess_dicom_to_nifti
 from .jobs import append_log, job_dir, load_job, update_job
 from .tasks import supports_fast
 from .viewer import clear_viewer_cache, mask_key
 
 
-def _mask_files(folder: Path) -> list[Path]:
-    return sorted(path for path in folder.iterdir() if path.is_file() and path.suffix == ".npz")
+def _nifti_files(folder: Path) -> list[Path]:
+    return sorted(
+        path
+        for path in folder.iterdir()
+        if path.is_file() and (path.name.endswith(".nii.gz") or path.suffix == ".nii")
+    )
+
+
+def _build_command(job: dict[str, Any], input_nii: Path, output_dir: Path) -> list[str]:
+    exe = local_totalsegmentator()
+    if exe is None:
+        raise RuntimeError("TotalSegmentator was not found. Run install.ps1 first.")
+    request = job["input"]
+    command = [
+        str(exe),
+        "-i",
+        str(input_nii),
+        "-o",
+        str(output_dir),
+        "--task",
+        str(request.get("task", "total")),
+        "--device",
+        str(request.get("device", "cpu")),
+    ]
+    task = str(request.get("task", "total"))
+    if request.get("fast", True) and supports_fast(task):
+        command.append("--fast")
+    roi_subset = request.get("roi_subset") or []
+    if roi_subset:
+        command.append("--roi_subset")
+        command.extend(str(item) for item in roi_subset)
+    return command
+
+
+def _line_progress(line: str, current: int) -> int:
+    text = line.lower()
+    if "download" in text:
+        return max(current, 30)
+    if "preprocess" in text or "resampl" in text:
+        return max(current, 36)
+    if "predict" in text or "nnunet" in text:
+        return max(current, 55)
+    if "saving" in text or "postprocess" in text:
+        return max(current, 82)
+    return min(84, current + 1)
 
 
 def compute_volumes(seg_dir: Path) -> list[dict[str, Any]]:
+    import SimpleITK as sitk
+
     volumes: list[dict[str, Any]] = []
-    for mask_path in _mask_files(seg_dir):
-        with np.load(mask_path, allow_pickle=False) as data:
-            mask = np.asarray(data["mask"])
-            spacing = np.asarray(data["spacing"], dtype=float)
+    for mask_path in _nifti_files(seg_dir):
+        image = sitk.ReadImage(str(mask_path))
+        spacing = image.GetSpacing()
         voxel_volume_mm3 = float(np.prod(np.abs(spacing)))
-        voxel_count = int(np.count_nonzero(mask > 0))
+        data = sitk.GetArrayFromImage(image)
+        voxel_count = int(np.count_nonzero(data > 0))
         volume_mm3 = voxel_count * voxel_volume_mm3
         volumes.append(
             {
@@ -45,7 +91,7 @@ def write_volume_exports(job_id: str, volumes: list[dict[str, Any]]) -> dict[str
     txt_path = folder / "volumes.txt"
     json_path.write_text(json.dumps(volumes, indent=2), encoding="utf-8")
     lines = [
-        "Synthetic demo volume report",
+        "TotalSegmentator volume report",
         f"Job: {job_id}",
         "",
         f"{'Mask':40} {'Voxels':>12} {'mm3':>14} {'ml':>12}",
@@ -63,29 +109,45 @@ def write_volume_exports(job_id: str, volumes: list[dict[str, Any]]) -> dict[str
 def run_segmentation_job(job_id: str) -> None:
     job = load_job(job_id)
     folder = job_dir(job_id)
-    input_npz = folder / "input.npz"
+    input_nii = folder / "input.nii.gz"
     output_dir = folder / "segmentations"
     output_dir.mkdir(parents=True, exist_ok=True)
 
     try:
-        scene_id = str(job["input"].get("scene_id", "synthetic_torso"))
-        if not supports_fast(scene_id):
-            raise RuntimeError(f"Unsupported demo scene: {scene_id}")
+        update_job(job_id, state="preprocessing", progress=5, stage="Preprocessing DICOM")
+        append_log(job_id, "Preprocessing DICOM series to NIfTI.")
+        preprocess = preprocess_dicom_to_nifti(job["input"]["dicom_path"], input_nii)
+        update_job(job_id, preprocess=preprocess, progress=18)
+        append_log(job_id, f"Wrote input NIfTI: {input_nii}")
 
-        append_log(job_id, f"Generating synthetic demo scene: {scene_id}")
-        update_job(job_id, state="preprocessing", progress=5, stage="Preparing demo scene")
-        time.sleep(0.1)
-        update_job(job_id, progress=18, stage="Synthesizing volume")
-        time.sleep(0.1)
-        update_job(job_id, progress=34, stage="Writing masks")
-        preprocess = save_scene(scene_id, input_npz, output_dir)
-        update_job(job_id, preprocess=preprocess, progress=68)
-        append_log(job_id, f"Wrote demo input: {input_npz}")
+        command = _build_command(job, input_nii, output_dir)
+        append_log(job_id, "Running: " + " ".join(f'"{part}"' if " " in part else part for part in command))
+        update_job(job_id, state="running", progress=25, stage="Running TotalSegmentator")
 
-        update_job(job_id, state="postprocessing", progress=84, stage="Computing volumes")
+        process = subprocess.Popen(
+            command,
+            cwd=str(folder),
+            env=runtime_env(),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1,
+            creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, "CREATE_NO_WINDOW") else 0,
+        )
+        progress = 25
+        assert process.stdout is not None
+        for raw_line in process.stdout:
+            append_log(job_id, raw_line)
+            progress = _line_progress(raw_line, progress)
+            update_job(job_id, progress=progress)
+        return_code = process.wait()
+        if return_code != 0:
+            raise RuntimeError(f"TotalSegmentator exited with code {return_code}. See log.txt.")
+
+        update_job(job_id, state="postprocessing", progress=90, stage="Computing volumes")
         volumes = compute_volumes(output_dir)
         if not volumes:
-            raise RuntimeError("Demo generation finished, but no masks were created.")
+            raise RuntimeError("TotalSegmentator finished, but no NIfTI masks were created.")
         exports = write_volume_exports(job_id, volumes)
         clear_viewer_cache()
         update_job(

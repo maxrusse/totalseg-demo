@@ -10,11 +10,16 @@ from PIL import Image
 from .jobs import job_dir, load_job
 
 
-def _is_mask_file(path: Path) -> bool:
-    return path.suffix == ".npz"
+def _is_nifti(path: Path) -> bool:
+    return path.name.endswith(".nii.gz") or path.suffix == ".nii"
 
 
 def mask_key(path: Path) -> str:
+    name = path.name
+    if name.endswith(".nii.gz"):
+        return name[:-7]
+    if name.endswith(".nii"):
+        return name[:-4]
     return path.stem
 
 
@@ -22,32 +27,29 @@ def segmentation_dir(job_id: str) -> Path:
     return job_dir(job_id) / "segmentations"
 
 
-def input_volume_path(job_id: str) -> Path:
-    return job_dir(job_id) / "input.npz"
+def input_nifti_path(job_id: str) -> Path:
+    return job_dir(job_id) / "input.nii.gz"
 
 
 @lru_cache(maxsize=4)
-def _load_array(path_text: str) -> tuple[np.ndarray, tuple[float, ...]]:
-    with np.load(path_text, allow_pickle=False) as data:
-        if "volume" in data:
-            array = np.asarray(data["volume"])
-        elif "mask" in data:
-            array = np.asarray(data["mask"])
-        else:
-            raise ValueError(f"Unsupported demo array format: {path_text}")
-        spacing = tuple(float(v) for v in np.asarray(data["spacing"]).tolist())
+def _load_image(path_text: str) -> tuple[np.ndarray, tuple[float, ...]]:
+    import SimpleITK as sitk
+
+    image = sitk.ReadImage(path_text)
+    array = sitk.GetArrayFromImage(image)
+    spacing = tuple(float(v) for v in image.GetSpacing())
     return array, spacing
 
 
 def load_ct(job_id: str) -> tuple[np.ndarray, tuple[float, ...]]:
-    return _load_array(str(input_volume_path(job_id)))
+    return _load_image(str(input_nifti_path(job_id)))
 
 
 def list_mask_files(job_id: str) -> list[Path]:
     seg_dir = segmentation_dir(job_id)
     if not seg_dir.exists():
         return []
-    return sorted(path for path in seg_dir.iterdir() if path.is_file() and _is_mask_file(path))
+    return sorted(path for path in seg_dir.iterdir() if path.is_file() and _is_nifti(path))
 
 
 def resolve_mask_file(job_id: str, key: str) -> Path:
@@ -67,7 +69,7 @@ def viewer_metadata(job_id: str) -> dict[str, Any]:
             "file": path.name,
         }
         try:
-            data, _ = _load_array(str(path))
+            data, _ = _load_image(str(path))
             nonzero = np.where(np.any(data > 0, axis=(1, 2)))[0]
             if nonzero.size:
                 item.update(
@@ -109,7 +111,7 @@ def ct_slice_png(job_id: str, slice_index: int, level: float = -600, width: floa
 
 def mask_slice_png(job_id: str, mask: str, slice_index: int) -> Image.Image:
     path = resolve_mask_file(job_id, mask)
-    data, _ = _load_array(str(path))
+    data, _ = _load_image(str(path))
     index = max(0, min(int(slice_index), data.shape[0] - 1))
     binary = data[index] > 0
     image = np.zeros((binary.shape[0], binary.shape[1], 4), dtype=np.uint8)
@@ -121,4 +123,4 @@ def mask_slice_png(job_id: str, mask: str, slice_index: int) -> Image.Image:
 
 
 def clear_viewer_cache() -> None:
-    _load_array.cache_clear()
+    _load_image.cache_clear()

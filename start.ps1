@@ -5,12 +5,14 @@ param(
 
 $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $MyInvocation.MyCommand.Path
-$Python = Join-Path $Root "runtime\venv\Scripts\python.exe"
+$Python = Join-Path $Root "runtime\conda-env\python.exe"
+$TotalsegHome = Join-Path $Root "runtime\totalsegmentator_home"
 
 if (-not (Test-Path $Python)) {
     throw "Runtime fehlt. Bitte zuerst install.ps1 ausfuehren."
 }
 
+$env:TOTALSEG_HOME_DIR = $TotalsegHome
 $Url = "http://127.0.0.1:$Port"
 
 if (-not $NoBrowser) {

@@ -1,5 +1,8 @@
-data/
-runtime/
+data/jobs/
+data/smoke/
+data/*.log
+runtime/conda-env/
+runtime/totalsegmentator_home/
 __pycache__/
 *.pyc
 .pytest_cache/

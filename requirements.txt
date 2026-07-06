@@ -1,5 +1,9 @@
 fastapi>=0.111,<1
 uvicorn[standard]>=0.30,<1
 pydantic>=2.7,<3
+pydicom>=2.4,<4
+SimpleITK>=2.3,<3
+nibabel>=5.2,<6
 numpy>=1.26,<3
 Pillow>=10,<13
+TotalSegmentator>=2.10,<3

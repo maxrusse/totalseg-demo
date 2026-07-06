@@ -1,9 +1,10 @@
 const state = {
-  currentScene: "",
+  currentPath: "",
+  selectedSeries: "",
   currentJob: "",
   pollTimer: null,
   masks: [],
-  scenes: []
+  tasks: []
 };
 
 const $ = (id) => document.getElementById(id);
@@ -37,45 +38,109 @@ function setLog(text) {
 
 async function loadStatus() {
   const status = await api("/api/status");
-  const runtime = status.local_python_exists
-    ? `Python: ${status.local_python}`
-    : "Python runtime missing: run install.ps1";
-  $("runtimeLine").textContent = `${runtime} | scenes: ${status.scene_count || 0} | demo mode`;
-}
-
-function renderScenes(scenes) {
-  state.scenes = scenes;
-  $("sceneSelect").innerHTML = "";
-  for (const scene of scenes) {
-    const option = document.createElement("option");
-    option.value = scene.id;
-    option.textContent = `${scene.label}`;
-    option.title = scene.description || "";
-    if (scene.recommended) option.selected = true;
-    $("sceneSelect").appendChild(option);
+  state.currentPath = status.default_dicom_root;
+  $("pathInput").value = status.default_dicom_root;
+  const runtime = status.totalsegmentator_exists
+    ? `TotalSegmentator: ${status.totalsegmentator}`
+    : "TotalSegmentator fehlt: install.ps1 ausfuehren";
+  const cuda = status.cuda_available ? `CUDA: ${status.cuda_device}` : "CUDA: nicht aktiv";
+  $("runtimeLine").textContent = `${runtime} | ${cuda} | Python: ${status.local_python}`;
+  const gpuOption = [...$("deviceSelect").options].find((option) => option.value === "gpu");
+  if (gpuOption) {
+    gpuOption.disabled = !status.cuda_available;
+    if (status.cuda_available) $("deviceSelect").value = "gpu";
   }
-  updateSceneSelection();
+  await loadDirectory(state.currentPath);
 }
 
-function updateSceneSelection() {
-  const scene = state.scenes.find((item) => item.id === $("sceneSelect").value);
-  state.currentScene = scene?.id || "";
-  $("selectedScene").textContent = scene ? scene.label : "none";
-  $("sceneDescription").textContent = scene?.description || "Select a demo scene.";
+async function loadTasks() {
+  const tasks = await api("/api/tasks");
+  state.tasks = tasks;
+  $("taskSelect").innerHTML = "";
+  for (const task of tasks) {
+    const option = document.createElement("option");
+    option.value = task.id;
+    option.textContent = `${task.label} (${task.modality}${task.license === "open" ? "" : ", Lizenz"})`;
+    option.title = task.description || "";
+    if (task.id === "lung_nodules") option.selected = true;
+    $("taskSelect").appendChild(option);
+  }
+  applyTaskDefaults();
 }
 
-async function loadScenes() {
-  const scenes = await api("/api/scenes");
-  renderScenes(scenes);
+function applyTaskDefaults() {
+  const task = state.tasks.find((item) => item.id === $("taskSelect").value);
+  const supportsFast = task ? task.supports_fast !== false : true;
+  $("fastCheck").disabled = !supportsFast;
+  if (!supportsFast) $("fastCheck").checked = false;
+}
+
+async function loadDirectory(path) {
+  const data = await api(`/api/fs/list?path=${encodeURIComponent(path)}`);
+  state.currentPath = data.path;
+  $("pathInput").value = data.path;
+  $("browserPath").textContent = data.path;
+  $("upBtn").disabled = !data.parent;
+  $("upBtn").dataset.parent = data.parent || "";
+  $("dirList").innerHTML = "";
+  for (const dir of data.dirs) {
+    const button = document.createElement("button");
+    button.className = "dir-item";
+    button.textContent = dir.name;
+    button.title = dir.path;
+    button.addEventListener("click", () => loadDirectory(dir.path).catch(showError));
+    $("dirList").appendChild(button);
+  }
+}
+
+function renderSeries(series) {
+  $("seriesCount").textContent = `${series.length}`;
+  $("seriesBody").innerHTML = "";
+  for (const item of series) {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${escapeHtml(item.patient_id || "")}</td>
+      <td>${escapeHtml(item.modality || "")}</td>
+      <td title="${escapeHtml(item.path)}">${escapeHtml(item.series_description || item.series_uid || "")}</td>
+      <td>${item.file_count || 0}</td>
+      <td><button>Use</button></td>
+    `;
+    row.querySelector("button").addEventListener("click", () => {
+      state.selectedSeries = item.path;
+      $("selectedSeries").textContent = item.path;
+    });
+    $("seriesBody").appendChild(row);
+  }
+}
+
+async function scanDicom() {
+  const path = $("pathInput").value.trim();
+  $("scanBtn").disabled = true;
+  $("scanBtn").textContent = "Scan...";
+  try {
+    const data = await api(`/api/dicom/scan?path=${encodeURIComponent(path)}`);
+    renderSeries(data.series);
+    if (data.series.length) {
+      state.selectedSeries = data.series[0].path;
+      $("selectedSeries").textContent = data.series[0].path;
+    }
+  } finally {
+    $("scanBtn").disabled = false;
+    $("scanBtn").textContent = "Scannen";
+  }
 }
 
 async function startJob() {
-  if (!state.currentScene) {
-    throw new Error("Please choose a demo scene first.");
+  if (!state.selectedSeries) {
+    throw new Error("Bitte zuerst eine DICOM-Serie auswaehlen.");
   }
+  const roi = $("roiInput").value.trim().split(/\s+/).filter(Boolean);
   const payload = {
-    scene_id: state.currentScene,
-    fast: $("fastCheck").checked
+    dicom_path: state.selectedSeries,
+    task: $("taskSelect").value,
+    fast: $("fastCheck").checked,
+    device: $("deviceSelect").value,
+    roi_subset: roi
   };
   $("runBtn").disabled = true;
   const job = await api("/api/jobs", {
@@ -105,7 +170,7 @@ async function pollJob(jobId) {
       await loadJobs();
       return;
     }
-    state.pollTimer = setTimeout(() => pollJob(jobId), 1200);
+    state.pollTimer = setTimeout(() => pollJob(jobId), 1800);
   } catch (error) {
     showError(error);
     $("runBtn").disabled = false;
@@ -121,7 +186,7 @@ async function loadJobs() {
     item.innerHTML = `
       <strong>${escapeHtml(job.id)}</strong>
       <span class="state-${escapeHtml(job.state)}">${escapeHtml(job.state)} ${job.progress || 0}%</span>
-      <span>${escapeHtml(job.input?.scene_id || "")}</span>
+      <span>${escapeHtml(job.input?.task || "")} | ${escapeHtml(job.input?.dicom_path || "")}</span>
     `;
     item.addEventListener("click", async () => {
       state.currentJob = job.id;
@@ -149,7 +214,7 @@ async function loadViewer(jobId) {
     option.textContent = mask.nonzero_slices ? `${mask.key} (${mask.first_slice}-${mask.last_slice})` : mask.key;
     $("maskSelect").appendChild(option);
   }
-  const preferred = state.masks[0];
+  const preferred = state.masks.find((mask) => mask.key === data.job?.input?.task) || state.masks[0];
   if (preferred) {
     $("maskSelect").value = preferred.key;
   }
@@ -206,13 +271,15 @@ function showError(error) {
 }
 
 function wireEvents() {
+  $("openPathBtn").addEventListener("click", () => loadDirectory($("pathInput").value).catch(showError));
+  $("upBtn").addEventListener("click", () => loadDirectory($("upBtn").dataset.parent).catch(showError));
+  $("scanBtn").addEventListener("click", () => scanDicom().catch(showError));
   $("runBtn").addEventListener("click", () => startJob().catch((error) => {
     showError(error);
     $("runBtn").disabled = false;
   }));
   $("refreshJobsBtn").addEventListener("click", () => loadJobs().catch(showError));
-  $("reloadScenesBtn").addEventListener("click", () => loadScenes().catch(showError));
-  $("sceneSelect").addEventListener("change", updateSceneSelection);
+  $("taskSelect").addEventListener("change", applyTaskDefaults);
   $("sliceRange").addEventListener("input", updateImages);
   $("maskSelect").addEventListener("change", jumpToMaskSlice);
   $("levelInput").addEventListener("change", updateImages);
@@ -221,7 +288,7 @@ function wireEvents() {
 
 async function init() {
   wireEvents();
-  await loadScenes();
+  await loadTasks();
   await loadStatus();
   await loadJobs();
 }

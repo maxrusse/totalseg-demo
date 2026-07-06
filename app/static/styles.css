@@ -1,13 +1,13 @@
 :root {
   color-scheme: light;
-  --bg: #eef2f4;
+  --bg: #eef1f4;
   --panel: #ffffff;
   --panel-2: #f7f9fb;
-  --text: #19212d;
-  --muted: #5f6d7e;
+  --text: #1b2430;
+  --muted: #627084;
   --line: #d7dee8;
-  --accent: #196c78;
-  --accent-dark: #124f57;
+  --accent: #147c86;
+  --accent-dark: #0f626a;
   --danger: #ae3d3d;
   --ok: #24795a;
 }
@@ -96,31 +96,35 @@ button:disabled {
 
 .workspace {
   display: grid;
-  grid-template-columns: minmax(280px, 0.9fr) minmax(360px, 1.1fr);
+  grid-template-columns: minmax(280px, 0.9fr) minmax(360px, 1.2fr) minmax(300px, 1fr);
   grid-template-areas:
-    "scene run"
-    "jobs jobs"
-    "viewer viewer";
+    "dicom series run"
+    "jobs jobs run"
+    "viewer viewer viewer";
   gap: 14px;
   padding: 14px;
 }
 
-.panel,
-.viewer-band {
+.panel {
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 8px;
   min-width: 0;
 }
 
-.scene-panel,
+.dicom-panel,
+.series-panel,
 .run-panel,
 .jobs-panel {
   padding: 14px;
 }
 
-.scene-panel {
-  grid-area: scene;
+.dicom-panel {
+  grid-area: dicom;
+}
+
+.series-panel {
+  grid-area: series;
 }
 
 .run-panel {
@@ -129,11 +133,6 @@ button:disabled {
 
 .jobs-panel {
   grid-area: jobs;
-}
-
-.viewer-band {
-  grid-area: viewer;
-  padding: 14px;
 }
 
 .panel-title {
@@ -149,7 +148,8 @@ button:disabled {
   font-size: 16px;
 }
 
-label {
+label,
+.path-label {
   display: block;
   color: var(--muted);
   font-size: 13px;
@@ -168,12 +168,97 @@ select {
   color: var(--text);
 }
 
+.path-row,
+.browser-row,
 .run-grid,
 .job-state,
 .viewer-controls {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.path-row input {
+  min-width: 0;
+}
+
+.browser-row {
+  margin: 10px 0;
+}
+
+#browserPath {
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dir-list {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  max-height: 280px;
+  overflow: auto;
+  background: var(--panel-2);
+}
+
+.dir-item,
+.job-item {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  color: var(--text);
+  justify-content: flex-start;
+  min-height: 36px;
+}
+
+.dir-item:last-child,
+.job-item:last-child {
+  border-bottom: 0;
+}
+
+.table-wrap,
+.volumes-wrap {
+  overflow: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+th,
+td {
+  border-bottom: 1px solid var(--line);
+  padding: 9px 8px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+th {
+  color: var(--muted);
+  font-weight: 600;
+  background: var(--panel-2);
+}
+
+td button {
+  min-height: 30px;
+  padding: 0 10px;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.run-grid {
+  align-items: end;
+}
+
+.run-grid label:first-child {
+  flex: 1;
 }
 
 .check-row {
@@ -231,8 +316,8 @@ select {
 }
 
 #logBox {
-  min-height: 220px;
-  max-height: 340px;
+  min-height: 230px;
+  max-height: 360px;
   margin: 12px 0 0;
   padding: 10px;
   border: 1px solid var(--line);
@@ -251,14 +336,12 @@ select {
 }
 
 .job-item {
-  width: 100%;
   border: 1px solid var(--line);
   border-radius: 6px;
   background: var(--panel-2);
-  color: var(--text);
+  display: block;
   padding: 10px;
   text-align: left;
-  display: block;
 }
 
 .job-item strong,
@@ -273,6 +356,14 @@ select {
   color: var(--muted);
   margin-top: 4px;
   font-size: 12px;
+}
+
+.viewer-band {
+  grid-area: viewer;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
 }
 
 .viewer-toolbar {
@@ -331,27 +422,6 @@ figure img {
   max-height: 280px;
   border: 1px solid var(--line);
   border-radius: 6px;
-  overflow: auto;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-
-th,
-td {
-  border-bottom: 1px solid var(--line);
-  padding: 9px 8px;
-  text-align: left;
-  vertical-align: middle;
-}
-
-th {
-  color: var(--muted);
-  font-weight: 600;
-  background: var(--panel-2);
 }
 
 .state-completed {
@@ -362,14 +432,14 @@ th {
   color: var(--danger);
 }
 
-@media (max-width: 960px) {
+@media (max-width: 1180px) {
   .workspace {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
     grid-template-areas:
-      "scene"
-      "run"
-      "jobs"
-      "viewer";
+      "dicom run"
+      "series run"
+      "jobs jobs"
+      "viewer viewer";
   }
 }
 
@@ -380,16 +450,23 @@ th {
     flex-direction: column;
   }
 
+  .workspace {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "dicom"
+      "series"
+      "run"
+      "jobs"
+      "viewer";
+  }
+
   .viewer-grid {
     grid-template-columns: 1fr;
   }
 
+  .path-row,
   .run-grid {
     flex-direction: column;
     align-items: stretch;
-  }
-
-  .viewer-controls {
-    width: 100%;
   }
 }

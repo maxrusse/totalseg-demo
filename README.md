@@ -21,9 +21,24 @@ Wenn Codex das hier für dich lokal nachbauen oder an deinen Rechner anpassen so
 Beispiel-Eingabe:
 
 ```text
+/goal
 Nimm dieses Repo als Ausgangspunkt: https://github.com/maxrusse/totalseg-demo
 Baue oder passe die App lokal für meinen PC an, installiere alle benötigten Abhängigkeiten in einem repo-lokalen env/venv und halte dich an /goal für die gesamte Umsetzung.
 ```
+
+## Hinweis Zu Den Tokenkosten
+
+Der ursprüngliche Build-Prompt für dieses benannte Tool begann mit `/goal` und führte in der lokalen Codex-Historie zu der hier dokumentierten Session `019eee1a-ef90-7663-9e1d-dc37068fe6dd`. Der Prompt war auf einen lokal lauffähigen Windows-Workflow für TotalSegmentator ausgerichtet, nicht auf ein reines Demo-Skelett.
+
+Der erste Build-Schritt in der lokalen Codex-Historie für diese Session endete vor der ersten Folgeeingabe und nutzte `7,642,415` Eingabe-Tokens, `7,200,128` zwischengespeicherte Eingabe-Tokens, `48,851` Ausgabe-Tokens und `7,691,266` Tokens insgesamt. Die Session-Metadaten zeigen `gpt-5.5` mit `xhigh`-Aufwand.
+
+Wenn man das mit GPT-5.5 im Standard-Kurzkontext berechnet, liegen die API-äquivalenten Kosten bei etwa `$7.28`:
+
+- nicht zwischengespeicherte Eingabe-Tokens: `442,287`
+- zwischengespeicherte Eingabe-Tokens: `7,200,128`
+- Ausgabe-Tokens: `48,851`
+
+Zwischengespeicherte Tokens sind Treffer im Eingabe-Präfix-Cache innerhalb der OpenAI-API-Infrastruktur, nicht Erinnerung aus einer früheren Codex-Instanz oder einem anderen Account. OpenAI sagt, dass diese Caches automatisch sind, nicht zwischen Organisationen geteilt werden und als `cached_tokens` im Nutzungsobjekt erscheinen. Siehe [Eingabecaching](https://developers.openai.com/api/docs/guides/prompt-caching) und [Preisübersicht](https://developers.openai.com/api/docs/pricing).
 
 ## Enthaltene Funktionen
 
@@ -65,24 +80,12 @@ Wer das Projekt nicht über die Skripte, sondern manuell aufsetzen will, braucht
 - ausreichend Speicherplatz für Laufdaten und Modellgewichte
 - optional eine NVIDIA-GPU für schnellere Segmentierung
 
-Manuelle Einrichtung heisst hier:
+Manuelle Einrichtung heißt hier:
 
 - Abhängigkeiten aus `requirements.txt` in die lokale Umgebung installieren
 - TotalSegmentator und seine Laufzeitdateien lokal verfügbar machen
 - die Modellgewichte lokal laden, falls nicht nur ein Schnelltest geplant ist
 - `install.ps1` und `start.ps1` nur als Referenz nutzen, wenn du den Ablauf selbst nachbaust
-
-## Hinweis Zu Den Tokenkosten
-
-Der erste Build-Schritt in der lokalen Codex-Historie für die Session `019eee1a-ef90-7663-9e1d-dc37068fe6dd` endete vor der ersten Folgeeingabe und nutzte `7,642,415` Eingabe-Tokens, `7,200,128` zwischengespeicherte Eingabe-Tokens, `48,851` Ausgabe-Tokens und `7,691,266` Tokens insgesamt. Die Session-Metadaten zeigen `gpt-5.5` mit `xhigh`-Aufwand.
-
-Wenn man das mit GPT-5.5 im Standard-Kurzkontext berechnet, liegen die API-äquivalenten Kosten bei etwa `$7.28`:
-
-- nicht zwischengespeicherte Eingabe-Tokens: `442,287`
-- zwischengespeicherte Eingabe-Tokens: `7,200,128`
-- Ausgabe-Tokens: `48,851`
-
-Zwischengespeicherte Tokens sind Treffer im Eingabe-Präfix-Cache innerhalb der OpenAI-API-Infrastruktur, nicht Erinnerung aus einer früheren Codex-Instanz oder einem anderen Account. OpenAI sagt, dass diese Caches automatisch sind, nicht zwischen Organisationen geteilt werden und als `cached_tokens` im Nutzungsobjekt erscheinen. Siehe [Eingabecaching](https://developers.openai.com/api/docs/guides/prompt-caching) und [Preisübersicht](https://developers.openai.com/api/docs/pricing).
 
 ## Installation
 

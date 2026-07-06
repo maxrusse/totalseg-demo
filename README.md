@@ -1,8 +1,8 @@
 # Lokales TotalSegmentator-Tool
 
-Lokale Windows-Weboberflaeche fuer TotalSegmentator.
+Lokale Windows-Weboberfläche für TotalSegmentator.
 
-Dieses Repository zeigt, wie Codex einen wissenschaftlich gepraegten Workflow in eine lokal lauffaehige Windows-Anwendung ueberfuehren kann: aus einer klaren Idee wird ein direkt nutzbares Tool mit Installation, Vorverarbeitung, lokaler Ausfuehrung, Browser-Oberflaeche und nachvollziehbarem Ergebnis.
+Dieses Repository zeigt, wie Codex einen wissenschaftlich geprägten Workflow in eine lokal lauffähige Windows-Anwendung überführen kann: aus einer klaren Idee wird ein direkt nutzbares Tool mit Installation, Vorverarbeitung, lokaler Ausführung, Browser-Oberfläche und nachvollziehbarem Ergebnis.
 
 Repository auf GitHub: https://github.com/maxrusse/totalseg-demo
 
@@ -10,28 +10,28 @@ Erstellt mit Codex CLI auf GPT-5.5 (`xhigh`).
 
 ## So nutzt du Codex
 
-Wenn Codex das hier fuer dich lokal nachbauen oder an deinen Rechner anpassen soll, verwende entweder deine eigene Eingabe oder verweise direkt auf das GitHub-Repository.
+Wenn Codex das hier für dich lokal nachbauen oder an deinen Rechner anpassen soll, verwende entweder deine eigene Eingabe oder verweise direkt auf das GitHub-Repository.
 
 - Beispiel: `https://github.com/maxrusse/totalseg-demo`
-- Bitte Codex, die Loesung an deinen PC anzupassen, also lokale Pfade, GPU oder CPU, und vorhandene Datenordner zu verwenden.
-- Bitte Codex, alle benoetigten Abhaengigkeiten in einem repo-lokalen `env` oder `venv` zu installieren.
+- Bitte Codex, die Lösung an deinen PC anzupassen, also lokale Pfade, GPU oder CPU, und vorhandene Datenordner zu verwenden.
+- Bitte Codex, alle benötigten Abhängigkeiten in einem repo-lokalen `env` oder `venv` zu installieren.
 - Nutze `/goal`, wenn der Auftrag als durchgaengige Aufgabe mit klarem Ziel verfolgt werden soll.
-- Ergebnisse koennen je nach Codex-Version, GPT-Modell, Reasoning-Einstellung, Hardware und Workspace-Zustand variieren.
+- Ergebnisse können je nach Codex-Version, GPT-Modell, Reasoning-Einstellung, Hardware und Workspace-Zustand variieren.
 
 Beispiel-Eingabe:
 
 ```text
 Nimm dieses Repo als Ausgangspunkt: https://github.com/maxrusse/totalseg-demo
-Baue oder passe die App lokal fuer meinen PC an, installiere alle benoetigten Abhaengigkeiten in einem repo-lokalen env/venv und halte dich an /goal fuer die gesamte Umsetzung.
+Baue oder passe die App lokal für meinen PC an, installiere alle benötigten Abhängigkeiten in einem repo-lokalen env/venv und halte dich an /goal für die gesamte Umsetzung.
 ```
 
 ## Enthaltene Funktionen
 
-- DICOM-Ordner auswaehlen und Serien lokal scannen
-- Eine CT-Serie fuer den Lauf gezielt auswaehlen
-- DICOM-Daten vorverarbeiten und in ein Lauf-Format ueberfuehren
-- TotalSegmentator lokal starten, ohne externe Cloud-Abhaengigkeit waehrend des Laufs
-- Verfuegbare Tasks und Algorithmus-Optionen im Browser waehlen
+- DICOM-Ordner auswählen und Serien lokal scannen
+- Eine CT-Serie für den Lauf gezielt auswählen
+- DICOM-Daten vorverarbeiten und in ein Lauf-Format überführen
+- TotalSegmentator lokal starten, ohne externe Cloud-Abhängigkeit während des Laufs
+- Verfügbare Tasks und Algorithmus-Optionen im Browser wählen
 - Fortschritt und Status je Job im Webfrontend verfolgen
 - CT-Slices und Segmentierungen nebeneinander anzeigen
 - Masken farblich darstellen und pro Struktur durchsehen
@@ -41,7 +41,7 @@ Baue oder passe die App lokal fuer meinen PC an, installiere alle benoetigten Ab
 
 ## Typischer Ablauf
 
-Das Projekt laeuft lokal unter Windows und braucht fuer den normalen Ablauf nur zwei Schritte:
+Das Projekt läuft lokal unter Windows und braucht für den normalen Ablauf nur zwei Schritte:
 
 1. `install.ps1`
 2. `start.ps1`
@@ -54,39 +54,39 @@ oder
 
 3. `download_weights.ps1`
 
-## Voraussetzungen Fuer Manuelle Einrichtung
+## Voraussetzungen Für Manuelle Einrichtung
 
-Wer das Projekt nicht ueber die Skripte, sondern manuell aufsetzen will, braucht mindestens:
+Wer das Projekt nicht über die Skripte, sondern manuell aufsetzen will, braucht mindestens:
 
 - Windows 10 oder 11
 - PowerShell
 - eine lokale Python-Umgebung im Repo, zum Beispiel `env` oder `venv`
 - Zugriff auf die DICOM-Testdaten oder eigene CT-Daten
-- ausreichend Speicherplatz fuer Laufdaten und Modellgewichte
-- optional eine NVIDIA-GPU fuer schnellere Segmentierung
+- ausreichend Speicherplatz für Laufdaten und Modellgewichte
+- optional eine NVIDIA-GPU für schnellere Segmentierung
 
 Manuelle Einrichtung heisst hier:
 
-- Abhaengigkeiten aus `requirements.txt` in die lokale Umgebung installieren
-- TotalSegmentator und seine Laufzeitdateien lokal verfuegbar machen
+- Abhängigkeiten aus `requirements.txt` in die lokale Umgebung installieren
+- TotalSegmentator und seine Laufzeitdateien lokal verfügbar machen
 - die Modellgewichte lokal laden, falls nicht nur ein Schnelltest geplant ist
 - `install.ps1` und `start.ps1` nur als Referenz nutzen, wenn du den Ablauf selbst nachbaust
 
 ## Hinweis Zu Den Tokenkosten
 
-Der erste Build-Schritt in der lokalen Codex-Historie fuer die Session `019eee1a-ef90-7663-9e1d-dc37068fe6dd` endete vor der ersten Folgeeingabe und nutzte `7,642,415` Eingabe-Tokens, `7,200,128` zwischengespeicherte Eingabe-Tokens, `48,851` Ausgabe-Tokens und `7,691,266` Tokens insgesamt. Die Session-Metadaten zeigen `gpt-5.5` mit `xhigh`-Aufwand.
+Der erste Build-Schritt in der lokalen Codex-Historie für die Session `019eee1a-ef90-7663-9e1d-dc37068fe6dd` endete vor der ersten Folgeeingabe und nutzte `7,642,415` Eingabe-Tokens, `7,200,128` zwischengespeicherte Eingabe-Tokens, `48,851` Ausgabe-Tokens und `7,691,266` Tokens insgesamt. Die Session-Metadaten zeigen `gpt-5.5` mit `xhigh`-Aufwand.
 
-Wenn man das mit GPT-5.5 im Standard-Kurzkontext berechnet, liegen die API-aequivalenten Kosten bei etwa `$7.28`:
+Wenn man das mit GPT-5.5 im Standard-Kurzkontext berechnet, liegen die API-äquivalenten Kosten bei etwa `$7.28`:
 
 - nicht zwischengespeicherte Eingabe-Tokens: `442,287`
 - zwischengespeicherte Eingabe-Tokens: `7,200,128`
 - Ausgabe-Tokens: `48,851`
 
-Zwischengespeicherte Tokens sind Treffer im Eingabe-Praefix-Cache innerhalb der OpenAI-API-Infrastruktur, nicht Erinnerung aus einer frueheren Codex-Instanz oder einem anderen Account. OpenAI sagt, dass diese Caches automatisch sind, nicht zwischen Organisationen geteilt werden und als `cached_tokens` im Nutzungsobjekt erscheinen. Siehe [Eingabecaching](https://developers.openai.com/api/docs/guides/prompt-caching) und [Preisuebersicht](https://developers.openai.com/api/docs/pricing).
+Zwischengespeicherte Tokens sind Treffer im Eingabe-Präfix-Cache innerhalb der OpenAI-API-Infrastruktur, nicht Erinnerung aus einer früheren Codex-Instanz oder einem anderen Account. OpenAI sagt, dass diese Caches automatisch sind, nicht zwischen Organisationen geteilt werden und als `cached_tokens` im Nutzungsobjekt erscheinen. Siehe [Eingabecaching](https://developers.openai.com/api/docs/guides/prompt-caching) und [Preisübersicht](https://developers.openai.com/api/docs/pricing).
 
 ## Installation
 
-PowerShell als normaler Benutzer oeffnen:
+PowerShell als normaler Benutzer öffnen:
 
 ```powershell
 cd C:\Users\Max\code\work\Totalseg
@@ -106,13 +106,13 @@ CPU-only Installation erzwingen:
 powershell -ExecutionPolicy Bypass -File .\install.ps1 -TorchBuild cpu
 ```
 
-Optional koennen die Modellgewichte vorab geladen werden:
+Optional können die Modellgewichte vorab geladen werden:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\install.ps1 -DownloadWeights -WeightsTask lung_nodules
 ```
 
-Das gleiche laesst sich auch mit `download_weights.ps1` machen. TotalSegmentator speichert die Gewichte lokal unter `runtime\totalsegmentator_home`.
+Das gleiche lässt sich auch mit `download_weights.ps1` machen. TotalSegmentator speichert die Gewichte lokal unter `runtime\totalsegmentator_home`.
 
 ## Start
 
@@ -141,11 +141,11 @@ Im Browser:
 
 1. Patient- oder Serienordner auswaehlen.
 2. `Scannen` klicken.
-3. Eine CT-Serie mit der Schaltflaeche `Use` auswaehlen.
-4. Task waehlen, z.B. `lung_nodules` oder `total`.
+3. Eine CT-Serie mit der Schaltfläche `Use` auswählen.
+4. Task wählen, z.B. `lung_nodules` oder `total`.
 5. `Start` klicken.
 
-CPU-Laeufe koennen lange dauern. `Fast` ist standardmaessig aktiv.
+CPU-Läufe können lange dauern. `Fast` ist standardmäßig aktiv.
 
 ## Schnelltest Ohne Segmentierung
 
@@ -153,7 +153,7 @@ CPU-Laeufe koennen lange dauern. `Fast` ist standardmaessig aktiv.
 powershell -ExecutionPolicy Bypass -File .\smoke_test.ps1
 ```
 
-Der Test sucht die erste CT-Serie in LIDC-IDRI und prueft die DICOM-zu-NIfTI-Vorverarbeitung.
+Der Test sucht die erste CT-Serie in LIDC-IDRI und prüft die DICOM-zu-NIfTI-Vorverarbeitung.
 
 ## Ergebnisse
 
@@ -165,10 +165,10 @@ Jeder Lauf bekommt einen Ordner unter `data\jobs\<job-id>`:
 - `volumes.txt`: Text-Export
 - `log.txt`: Laufprotokoll
 
-Der Viewer zeigt links CT-Slices und rechts die ausgewaehlte Maske. Volumina lassen sich ueber `Volumina` als Textdatei exportieren.
+Der Viewer zeigt links CT-Slices und rechts die ausgewählte Maske. Volumina lassen sich über `Volumina` als Textdatei exportieren.
 
 ## Hinweise
 
-TotalSegmentator ist kein Medizinprodukt fuer klinische Nutzung. Die App ist ein lokales Forschungs-/Testwerkzeug.
+TotalSegmentator ist kein Medizinprodukt für klinische Nutzung. Die App ist ein lokales Forschungs-/Testwerkzeug.
 
 Offizielle TotalSegmentator-Dokumentation: https://github.com/wasserth/TotalSegmentator

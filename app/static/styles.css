@@ -1,0 +1,395 @@
+:root {
+  color-scheme: light;
+  --bg: #eef2f4;
+  --panel: #ffffff;
+  --panel-2: #f7f9fb;
+  --text: #19212d;
+  --muted: #5f6d7e;
+  --line: #d7dee8;
+  --accent: #196c78;
+  --accent-dark: #124f57;
+  --danger: #ae3d3d;
+  --ok: #24795a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Segoe UI", Arial, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button,
+.button-link {
+  border: 1px solid var(--accent-dark);
+  background: var(--accent);
+  color: #fff;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+button:hover,
+.button-link:hover {
+  background: var(--accent-dark);
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.ghost,
+.icon-button {
+  background: #fff;
+  color: var(--text);
+  border-color: var(--line);
+}
+
+.ghost:hover,
+.icon-button:hover {
+  background: var(--panel-2);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--line);
+  background: #fff;
+}
+
+.topbar h1,
+.panel h2,
+.viewer-toolbar h2 {
+  margin: 0;
+  font-weight: 650;
+  letter-spacing: 0;
+}
+
+.topbar h1 {
+  font-size: 22px;
+}
+
+.topbar p {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.9fr) minmax(360px, 1.1fr);
+  grid-template-areas:
+    "scene run"
+    "jobs jobs"
+    "viewer viewer";
+  gap: 14px;
+  padding: 14px;
+}
+
+.panel,
+.viewer-band {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  min-width: 0;
+}
+
+.scene-panel,
+.run-panel,
+.jobs-panel {
+  padding: 14px;
+}
+
+.scene-panel {
+  grid-area: scene;
+}
+
+.run-panel {
+  grid-area: run;
+}
+
+.jobs-panel {
+  grid-area: jobs;
+}
+
+.viewer-band {
+  grid-area: viewer;
+  padding: 14px;
+}
+
+.panel-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.panel h2,
+.viewer-toolbar h2 {
+  font-size: 16px;
+}
+
+label {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  margin: 10px 0 6px;
+}
+
+input[type="text"],
+input[type="number"],
+select {
+  width: 100%;
+  min-height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0 10px;
+  background: #fff;
+  color: var(--text);
+}
+
+.run-grid,
+.job-state,
+.viewer-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+  margin-bottom: 0;
+  min-height: 36px;
+}
+
+.selected-path {
+  margin-top: 12px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel-2);
+}
+
+.selected-path span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.selected-path strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.progress-shell {
+  height: 12px;
+  border-radius: 999px;
+  background: #dfe5ec;
+  margin-top: 14px;
+  overflow: hidden;
+}
+
+#progressBar {
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+  transition: width 0.25s ease;
+}
+
+.job-state {
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+#logBox {
+  min-height: 220px;
+  max-height: 340px;
+  margin: 12px 0 0;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #10151d;
+  color: #dfe7ef;
+  overflow: auto;
+  white-space: pre-wrap;
+  font-size: 12px;
+}
+
+.job-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 8px;
+}
+
+.job-item {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel-2);
+  color: var(--text);
+  padding: 10px;
+  text-align: left;
+  display: block;
+}
+
+.job-item strong,
+.job-item span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.job-item span {
+  color: var(--muted);
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.viewer-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.viewer-controls {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.viewer-controls label {
+  min-width: 120px;
+  margin: 0;
+}
+
+.viewer-controls input[type="range"] {
+  width: 170px;
+}
+
+.viewer-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+figure {
+  margin: 0;
+  background: #111820;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #101820;
+}
+
+figcaption {
+  padding: 8px 10px;
+  color: #c8d5df;
+  font-size: 13px;
+  border-bottom: 1px solid #263342;
+}
+
+figure img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  background: #05080c;
+}
+
+.volumes-wrap {
+  margin-top: 12px;
+  max-height: 280px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+th,
+td {
+  border-bottom: 1px solid var(--line);
+  padding: 9px 8px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+th {
+  color: var(--muted);
+  font-weight: 600;
+  background: var(--panel-2);
+}
+
+.state-completed {
+  color: var(--ok);
+}
+
+.state-failed {
+  color: var(--danger);
+}
+
+@media (max-width: 960px) {
+  .workspace {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "scene"
+      "run"
+      "jobs"
+      "viewer";
+  }
+}
+
+@media (max-width: 760px) {
+  .topbar,
+  .viewer-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .viewer-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .run-grid {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .viewer-controls {
+    width: 100%;
+  }
+}

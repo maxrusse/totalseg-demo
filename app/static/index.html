@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Codex Windows Demo</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <h1>Codex Windows Demo</h1>
+        <p id="runtimeLine">Runtime is being checked...</p>
+      </div>
+      <div class="top-actions">
+        <button id="refreshJobsBtn" class="icon-button" title="Refresh jobs">↻</button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="panel scene-panel">
+        <div class="panel-title">
+          <h2>Scene</h2>
+          <button id="reloadScenesBtn" class="ghost" title="Reload scenes">Reload</button>
+        </div>
+        <label for="sceneSelect">Demo scene</label>
+        <select id="sceneSelect"></select>
+        <div class="selected-path">
+          <span>Description</span>
+          <strong id="sceneDescription">Select a demo scene.</strong>
+        </div>
+        <div class="selected-path">
+          <span>About</span>
+          <strong>No DICOM or model weights are required. Everything is generated locally.</strong>
+        </div>
+      </section>
+
+      <section class="panel run-panel">
+        <div class="panel-title">
+          <h2>Run</h2>
+          <button id="runBtn">Start demo</button>
+        </div>
+        <div class="run-grid">
+          <label class="check-row">
+            <input id="fastCheck" type="checkbox" checked />
+            <span>Fast</span>
+          </label>
+        </div>
+        <div class="selected-path">
+          <span>Selected scene</span>
+          <strong id="selectedScene">none</strong>
+        </div>
+        <div class="progress-shell">
+          <div id="progressBar"></div>
+        </div>
+        <div class="job-state">
+          <span id="jobState">Ready</span>
+          <span id="jobProgress">0%</span>
+        </div>
+        <pre id="logBox"></pre>
+      </section>
+
+      <section class="panel jobs-panel">
+        <div class="panel-title">
+          <h2>Jobs</h2>
+        </div>
+        <div id="jobList" class="job-list"></div>
+      </section>
+
+      <section class="viewer-band">
+        <div class="viewer-toolbar">
+          <div>
+            <h2>Viewer</h2>
+            <span id="viewerInfo" class="muted">No result loaded</span>
+          </div>
+          <div class="viewer-controls">
+            <label>Mask <select id="maskSelect"></select></label>
+            <label>Slice <input id="sliceRange" type="range" min="0" max="0" value="0" /></label>
+            <label>Level <input id="levelInput" type="number" value="-600" /></label>
+            <label>Width <input id="widthInput" type="number" value="1500" /></label>
+            <a id="exportLink" class="button-link" href="#" download>Volumes</a>
+          </div>
+        </div>
+        <div class="viewer-grid">
+          <figure>
+            <figcaption>Volume</figcaption>
+            <img id="ctImage" alt="Demo volume slice" />
+          </figure>
+          <figure>
+            <figcaption>Mask</figcaption>
+            <img id="maskImage" alt="Demo mask slice" />
+          </figure>
+        </div>
+        <div class="volumes-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Mask</th>
+                <th>Voxels</th>
+                <th>ml</th>
+              </tr>
+            </thead>
+            <tbody id="volumesBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>

@@ -1,8 +1,45 @@
-# TotalSegmentator Local Tool
+# Lokales TotalSegmentator-Tool
 
-Lokales Windows-Webfrontend fuer TotalSegmentator.
+Lokale Windows-Weboberflaeche fuer TotalSegmentator.
 
-GitHub: https://github.com/maxrusse/totalseg-demo
+Dieses Repository zeigt, wie Codex einen wissenschaftlich gepraegten Workflow in eine lokal lauffaehige Windows-Anwendung ueberfuehren kann: aus einer klaren Idee wird ein direkt nutzbares Tool mit Installation, Vorverarbeitung, lokaler Ausfuehrung, Browser-Oberflaeche und nachvollziehbarem Ergebnis.
+
+Repository auf GitHub: https://github.com/maxrusse/totalseg-demo
+
+Erstellt mit Codex CLI auf GPT-5.5 (`xhigh`).
+
+## So nutzt du Codex
+
+Wenn Codex das hier fuer dich lokal nachbauen oder an deinen Rechner anpassen soll, verwende entweder deine eigene Eingabe oder verweise direkt auf das GitHub-Repository.
+
+- Beispiel: `https://github.com/maxrusse/totalseg-demo`
+- Bitte Codex, die Loesung an deinen PC anzupassen, also lokale Pfade, GPU oder CPU, und vorhandene Datenordner zu verwenden.
+- Bitte Codex, alle benoetigten Abhaengigkeiten in einem repo-lokalen `env` oder `venv` zu installieren.
+- Nutze `/goal`, wenn der Auftrag als durchgaengige Aufgabe mit klarem Ziel verfolgt werden soll.
+- Ergebnisse koennen je nach Codex-Version, GPT-Modell, Reasoning-Einstellung, Hardware und Workspace-Zustand variieren.
+
+Beispiel-Eingabe:
+
+```text
+Nimm dieses Repo als Ausgangspunkt: https://github.com/maxrusse/totalseg-demo
+Baue oder passe die App lokal fuer meinen PC an, installiere alle benoetigten Abhaengigkeiten in einem repo-lokalen env/venv und halte dich an /goal fuer die gesamte Umsetzung.
+```
+
+## Enthaltene Funktionen
+
+- DICOM-Ordner auswaehlen und Serien lokal scannen
+- Eine CT-Serie fuer den Lauf gezielt auswaehlen
+- DICOM-Daten vorverarbeiten und in ein Lauf-Format ueberfuehren
+- TotalSegmentator lokal starten, ohne externe Cloud-Abhaengigkeit waehrend des Laufs
+- Verfuegbare Tasks und Algorithmus-Optionen im Browser waehlen
+- Fortschritt und Status je Job im Webfrontend verfolgen
+- CT-Slices und Segmentierungen nebeneinander anzeigen
+- Masken farblich darstellen und pro Struktur durchsehen
+- Volumina berechnen und als `volumes.json` sowie `volumes.txt` exportieren
+- Pro Lauf ein eigenes Job-Verzeichnis mit Protokoll und Ergebnissen schreiben
+- Installation, Start und Schnelltest mit PowerShell-Skripten reproduzierbar machen
+
+## Typischer Ablauf
 
 Das Projekt laeuft lokal unter Windows und braucht fuer den normalen Ablauf nur zwei Schritte:
 
@@ -17,11 +54,35 @@ oder
 
 3. `download_weights.ps1`
 
-## Build Cost Note
+## Voraussetzungen Fuer Manuelle Einrichtung
 
-Rough estimate for the full initial build thread: about 30k to 60k tokens total, depending on how tool output and retries are counted. The build history here used GPT-5.5 High, so the API-equivalent cost is best treated as an estimate rather than an exact bill. For a build thread of this size, it is usually in the low-dollar range, with the final number depending on how much was cached and how much output the model generated.
+Wer das Projekt nicht ueber die Skripte, sondern manuell aufsetzen will, braucht mindestens:
 
-Cached tokens are prompt-prefix cache hits inside OpenAI's API infrastructure, not memory from a prior Codex instance or another account. OpenAI says prompt caches are automatic, not shared between organizations, and show up as `cached_tokens` in the usage object. See [Prompt caching](https://developers.openai.com/api/docs/guides/prompt-caching) and [Pricing](https://developers.openai.com/api/docs/pricing).
+- Windows 10 oder 11
+- PowerShell
+- eine lokale Python-Umgebung im Repo, zum Beispiel `env` oder `venv`
+- Zugriff auf die DICOM-Testdaten oder eigene CT-Daten
+- ausreichend Speicherplatz fuer Laufdaten und Modellgewichte
+- optional eine NVIDIA-GPU fuer schnellere Segmentierung
+
+Manuelle Einrichtung heisst hier:
+
+- Abhaengigkeiten aus `requirements.txt` in die lokale Umgebung installieren
+- TotalSegmentator und seine Laufzeitdateien lokal verfuegbar machen
+- die Modellgewichte lokal laden, falls nicht nur ein Schnelltest geplant ist
+- `install.ps1` und `start.ps1` nur als Referenz nutzen, wenn du den Ablauf selbst nachbaust
+
+## Hinweis Zu Den Tokenkosten
+
+Der erste Build-Schritt in der lokalen Codex-Historie fuer die Session `019eee1a-ef90-7663-9e1d-dc37068fe6dd` endete vor der ersten Folgeeingabe und nutzte `7,642,415` Eingabe-Tokens, `7,200,128` zwischengespeicherte Eingabe-Tokens, `48,851` Ausgabe-Tokens und `7,691,266` Tokens insgesamt. Die Session-Metadaten zeigen `gpt-5.5` mit `xhigh`-Aufwand.
+
+Wenn man das mit GPT-5.5 im Standard-Kurzkontext berechnet, liegen die API-aequivalenten Kosten bei etwa `$7.28`:
+
+- nicht zwischengespeicherte Eingabe-Tokens: `442,287`
+- zwischengespeicherte Eingabe-Tokens: `7,200,128`
+- Ausgabe-Tokens: `48,851`
+
+Zwischengespeicherte Tokens sind Treffer im Eingabe-Praefix-Cache innerhalb der OpenAI-API-Infrastruktur, nicht Erinnerung aus einer frueheren Codex-Instanz oder einem anderen Account. OpenAI sagt, dass diese Caches automatisch sind, nicht zwischen Organisationen geteilt werden und als `cached_tokens` im Nutzungsobjekt erscheinen. Siehe [Eingabecaching](https://developers.openai.com/api/docs/guides/prompt-caching) und [Preisuebersicht](https://developers.openai.com/api/docs/pricing).
 
 ## Installation
 
@@ -80,13 +141,13 @@ Im Browser:
 
 1. Patient- oder Serienordner auswaehlen.
 2. `Scannen` klicken.
-3. Eine CT-Serie mit `Use` auswaehlen.
+3. Eine CT-Serie mit der Schaltflaeche `Use` auswaehlen.
 4. Task waehlen, z.B. `lung_nodules` oder `total`.
 5. `Start` klicken.
 
 CPU-Laeufe koennen lange dauern. `Fast` ist standardmaessig aktiv.
 
-## Smoke-Test ohne Segmentierung
+## Schnelltest Ohne Segmentierung
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\smoke_test.ps1

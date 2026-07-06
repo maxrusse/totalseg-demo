@@ -1,5 +1,7 @@
 # Codex Windows Demo
 
+GitHub: https://github.com/maxrusse/totalseg-demo
+
 This is a self-contained Windows web app that Codex can open, run, and inspect in one shot.
 
 It generates a synthetic 3D demo scene locally, so there is:

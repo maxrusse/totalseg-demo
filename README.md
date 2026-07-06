@@ -17,6 +17,12 @@ oder
 
 3. `download_weights.ps1`
 
+## Build Cost Note
+
+Rough estimate for the full initial build thread: about 30k to 60k tokens total, depending on how tool output and retries are counted. The build history here used GPT-5.5 High, so the API-equivalent cost is best treated as an estimate rather than an exact bill. For a build thread of this size, it is usually in the low-dollar range, with the final number depending on how much was cached and how much output the model generated.
+
+Cached tokens are prompt-prefix cache hits inside OpenAI's API infrastructure, not memory from a prior Codex instance or another account. OpenAI says prompt caches are automatic, not shared between organizations, and show up as `cached_tokens` in the usage object. See [Prompt caching](https://developers.openai.com/api/docs/guides/prompt-caching) and [Pricing](https://developers.openai.com/api/docs/pricing).
+
 ## Installation
 
 PowerShell als normaler Benutzer oeffnen:

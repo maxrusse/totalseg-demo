@@ -2,7 +2,7 @@
 
 GitHub: https://github.com/maxrusse/totalseg-demo
 
-This is a self-contained Windows web app that Codex can open, run, and inspect in one shot.
+This is a self-contained Windows web app that runs locally on Windows.
 
 It generates a synthetic 3D demo scene locally, so there is:
 
@@ -12,13 +12,15 @@ It generates a synthetic 3D demo scene locally, so there is:
 
 The app uses FastAPI + a small browser UI and writes demo jobs into `data\jobs`.
 
-## Run with Codex
+## Prompt History
 
-Open this GitHub repo in Codex and ask it to run the Windows demo. The one-liner it should use is:
+### TotalSeg build prompt
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\install.ps1; powershell -ExecutionPolicy Bypass -File .\start.ps1
-```
+> Build a local Windows web frontend for TotalSegmentator with install/start/stop scripts, a browser UI, job tracking, a viewer, and volume export. Keep it fully local and self-contained.
+
+### GitHub upload prompt
+
+> Upload that as a full working example without DICOM or weights to GitHub as a public example for a Codex one-shot Windows application. Add small info on how to run it in the README with manual PowerShell one-liners, and ignore the backup.
 
 ## Run manually
 
@@ -26,6 +28,12 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1; powershell -ExecutionPol
 cd C:\Users\Max\code\work\Totalseg
 powershell -ExecutionPolicy Bypass -File .\install.ps1
 powershell -ExecutionPolicy Bypass -File .\start.ps1
+```
+
+One-liner:
+
+```powershell
+powershell -ExecutionPolicy Bypass -Command "Set-Location C:\Users\Max\code\work\Totalseg; .\install.ps1; .\start.ps1"
 ```
 
 The app opens at:
@@ -51,4 +59,4 @@ powershell -ExecutionPolicy Bypass -File .\smoke_test.ps1
 - slice and mask viewers
 - job history and volume reports
 
-The public example is intentionally small and reproducible so it is easy to hand to Codex or a teammate.
+The public example is intentionally small and reproducible so it is easy to hand to a teammate.
